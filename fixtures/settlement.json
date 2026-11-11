@@ -1,0 +1,348 @@
+{
+  "synthetic": true,
+  "steps": [
+    {
+      "request": {
+        "operation": "contract.create",
+        "arguments": {
+          "contract_id": "contract-a",
+          "provider": "provider-a",
+          "consumer": "consumer-a",
+          "currency": "CNY",
+          "definition": {
+            "valid_from": "2026-01-01T00:00:00Z",
+            "valid_until": "2027-01-01T00:00:00Z",
+            "meters": [
+              "records"
+            ],
+            "purposes": [
+              "research"
+            ],
+            "regions": [
+              "CN"
+            ],
+            "tolerance": {
+              "records": "0.1"
+            }
+          }
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "rate.add",
+        "arguments": {
+          "rate_id": "rate-a",
+          "contract_id": "contract-a",
+          "meter": "records",
+          "start_at": "2026-01-01T00:00:00Z",
+          "end_at": "2027-01-01T00:00:00Z",
+          "definition": {
+            "tiers": [
+              {
+                "up_to": "100",
+                "unit_price": "0.25"
+              },
+              {
+                "up_to": null,
+                "unit_price": "0.1"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "dispute.register",
+        "arguments": {
+          "actor_id": "approver",
+          "role": "approver"
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "event.receive",
+        "arguments": {
+          "value": {
+            "event_id": "provider-1",
+            "contract_id": "contract-a",
+            "side": "provider",
+            "sequence": 1,
+            "usage_id": "usage-a",
+            "revision": 1,
+            "action": "report",
+            "usage": {
+              "meter": "records",
+              "at": "2026-11-10T12:00:00Z",
+              "quantity": "10",
+              "purpose": "research",
+              "region": "CN",
+              "dimensions": {
+                "source": "synthetic"
+              }
+            }
+          }
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "event.drain",
+        "arguments": {
+          "contract_id": "contract-a",
+          "side": "provider"
+        }
+      },
+      "expect": {
+        "cursor": 1
+      }
+    },
+    {
+      "request": {
+        "operation": "event.receive",
+        "arguments": {
+          "value": {
+            "event_id": "consumer-1",
+            "contract_id": "contract-a",
+            "side": "consumer",
+            "sequence": 1,
+            "usage_id": "usage-a",
+            "revision": 1,
+            "action": "report",
+            "usage": {
+              "meter": "records",
+              "at": "2026-11-10T12:00:00Z",
+              "quantity": "10",
+              "purpose": "research",
+              "region": "CN",
+              "dimensions": {
+                "source": "synthetic"
+              }
+            }
+          }
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "event.drain",
+        "arguments": {
+          "contract_id": "contract-a",
+          "side": "consumer"
+        }
+      },
+      "expect": {
+        "cursor": 1
+      }
+    },
+    {
+      "request": {
+        "operation": "reconcile.run",
+        "arguments": {
+          "run_id": "first",
+          "contract_id": "contract-a",
+          "period": "2026-11"
+        }
+      },
+      "expect": {
+        "rows.0.status": "matched"
+      }
+    },
+    {
+      "request": {
+        "operation": "invoice.prepare",
+        "arguments": {
+          "invoice_id": "original",
+          "run_id": "first"
+        }
+      },
+      "expect": {
+        "total_cents": 250
+      }
+    },
+    {
+      "request": {
+        "operation": "invoice.close",
+        "arguments": {
+          "invoice_id": "original",
+          "expected_revision": 1,
+          "approver": "approver"
+        }
+      },
+      "expect": {
+        "state": "closed"
+      }
+    },
+    {
+      "request": {
+        "operation": "event.receive",
+        "arguments": {
+          "value": {
+            "event_id": "provider-2",
+            "contract_id": "contract-a",
+            "side": "provider",
+            "sequence": 2,
+            "usage_id": "usage-a",
+            "revision": 2,
+            "action": "correct",
+            "usage": {
+              "meter": "records",
+              "at": "2026-11-10T12:00:00Z",
+              "quantity": "20",
+              "purpose": "research",
+              "region": "CN",
+              "dimensions": {
+                "source": "synthetic"
+              }
+            },
+            "reason": "synthetic correction"
+          }
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "event.drain",
+        "arguments": {
+          "contract_id": "contract-a",
+          "side": "provider"
+        }
+      },
+      "expect": {
+        "cursor": 2
+      }
+    },
+    {
+      "request": {
+        "operation": "event.receive",
+        "arguments": {
+          "value": {
+            "event_id": "consumer-2",
+            "contract_id": "contract-a",
+            "side": "consumer",
+            "sequence": 2,
+            "usage_id": "usage-a",
+            "revision": 2,
+            "action": "correct",
+            "usage": {
+              "meter": "records",
+              "at": "2026-11-10T12:00:00Z",
+              "quantity": "20",
+              "purpose": "research",
+              "region": "CN",
+              "dimensions": {
+                "source": "synthetic"
+              }
+            },
+            "reason": "synthetic correction"
+          }
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "event.drain",
+        "arguments": {
+          "contract_id": "contract-a",
+          "side": "consumer"
+        }
+      },
+      "expect": {
+        "cursor": 2
+      }
+    },
+    {
+      "request": {
+        "operation": "reconcile.run",
+        "arguments": {
+          "run_id": "second",
+          "contract_id": "contract-a",
+          "period": "2026-11"
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "invoice.prepare",
+        "arguments": {
+          "invoice_id": "adjustment",
+          "run_id": "second",
+          "kind": "adjustment"
+        }
+      },
+      "expect": {
+        "total_cents": 250
+      }
+    },
+    {
+      "request": {
+        "operation": "invoice.close",
+        "arguments": {
+          "invoice_id": "adjustment",
+          "expected_revision": 1,
+          "approver": "approver"
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "invoice.chain",
+        "arguments": {
+          "contract_id": "contract-a",
+          "period": "2026-11"
+        }
+      },
+      "expect": {
+        "cumulative_cents": 500,
+        "latest_recalculated_cents": 500
+      }
+    },
+    {
+      "request": {
+        "operation": "payment.receive",
+        "arguments": {
+          "payment_id": "payment",
+          "contract_id": "contract-a",
+          "amount_cents": 500,
+          "currency": "CNY",
+          "reference": "synthetic-bank"
+        }
+      },
+      "expect": {}
+    },
+    {
+      "request": {
+        "operation": "payment.auto_allocate",
+        "arguments": {
+          "payment_id": "payment"
+        }
+      },
+      "expect": {
+        "payment.unallocated_cents": 0
+      }
+    },
+    {
+      "request": {
+        "operation": "closing.receivables",
+        "arguments": {
+          "contract_id": "contract-a"
+        }
+      },
+      "expect": {
+        "net_due_cents": 0,
+        "balanced": true
+      }
+    }
+  ]
+}

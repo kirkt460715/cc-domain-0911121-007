@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.sqlite*
+.coverage
+
+.env
+*.key
+*.pem
+__pycache__/
+*.pyc
+node_modules/
+.demo-state/

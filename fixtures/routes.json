@@ -1,0 +1,20 @@
+{
+  "/usage": {
+    "file": "usage.gz",
+    "type": "application/gzip",
+    "chunk": 7
+  },
+  "/usage?cut=1": {
+    "file": "usage.gz",
+    "type": "application/gzip",
+    "truncate": 5
+  },
+  "/usage?bad=1": {
+    "file": "badrow.gz",
+    "type": "application/gzip"
+  },
+  "/usage?total=1": {
+    "file": "wrong-total.gz",
+    "type": "application/gzip"
+  }
+}
