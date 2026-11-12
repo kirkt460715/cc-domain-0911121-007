@@ -1,9 +1,11 @@
 import argparse
+import base64
 import json
 import sys
+import urllib.request
 from pathlib import Path
 from meterbook.service import Meterbook
-from meterbook.values import loads, canonical, MeterError, reject
+from meterbook.values import loads, canonical, number, MeterError, reject
 from meterbook.ports import files
 
 
@@ -57,6 +59,11 @@ def parser():
     ingest.add_argument('--atomic', action='store_true')
     demo = commands.add_parser('replay')
     demo.add_argument('fixture')
+    collect = commands.add_parser('collect')
+    collect.add_argument('source')
+    collect.add_argument('--session', required=True)
+    collect.add_argument('--mapping', required=True)
+    collect.add_argument('--chunk', type=int, default=65536)
     export = commands.add_parser('export')
     export.add_argument('invoice_id')
     export.add_argument('--format', choices=['json', 'csv'], default='json')
@@ -78,6 +85,22 @@ def main(argv=None):
                 content = Path(arguments.input).read_text(encoding='utf-8')
                 values = files.parse_csv(content) if arguments.format == 'csv' else files.parse_jsonlines(content)
                 result = files.ingest(app.store, values, arguments.atomic)
+            elif arguments.command == 'collect':
+                number(arguments.chunk, 'chunk', 1024, 1000000)
+                app.exports.begin(arguments.session, arguments.mapping)
+                if '://' in arguments.source:
+                    stream = urllib.request.urlopen(arguments.source, timeout=30)
+                else:
+                    stream = open(arguments.source, 'rb')
+                with stream:
+                    while True:
+                        chunk = stream.read(arguments.chunk)
+                        if not chunk:
+                            break
+                        app.exports.feed(arguments.session, base64.b64encode(chunk).decode())
+                result = app.exports.finish(arguments.session)
+                print(canonical(result))
+                return 0 if result['state'] in ('reconciled', 'duplicate') else 1
             elif arguments.command == 'export':
                 if arguments.format == 'csv':
                     print(files.invoice_csv(app.store, arguments.invoice_id)['csv'], end='')

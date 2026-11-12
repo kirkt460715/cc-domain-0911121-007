@@ -16,5 +16,10 @@
   "/usage?total=1": {
     "file": "wrong-total.gz",
     "type": "application/gzip"
+  },
+  "/usage?rev=1": {
+    "file": "revision.gz",
+    "type": "application/gzip",
+    "chunk": 5
   }
 }

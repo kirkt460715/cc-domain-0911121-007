@@ -18,6 +18,10 @@ Dockerfile 固定运行时版本。首次准备执行 docker build -t local-prod
     python -m meterbook replay fixtures/settlement.json
 输入端演练检查：
     python demo_support/check.py
+采集入口演练（边下载边校验的月度导出采集）：
+    python demo_support/collect.py
+供应商月度压缩 NDJSON 经 meterbook collect 边下载边核平，核平后才按既有双边用量与结算逻辑入账：
+    python -m meterbook --database 库文件 collect 来源 --session 会话 --mapping 映射
 合并运行：
     sh demo_support/verify.sh
 
